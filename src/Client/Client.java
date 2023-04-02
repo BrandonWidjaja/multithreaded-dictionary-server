@@ -26,9 +26,9 @@ public class Client {
 			while (!(line = scanner.nextLine()).equalsIgnoreCase("exit"))
 			{
 				Map<String, String> data = new HashMap<>();
-				data.put("type", "this is the type");
+				data.put("option", "remove");
 				data.put("word", "this is the word");
-				data.put("meaning", "this is a definition!");
+				data.put("definition", "this is a definition!");
 				
 				
 				String map = data.toString();

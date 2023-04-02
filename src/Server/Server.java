@@ -5,7 +5,6 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 
@@ -53,15 +52,10 @@ public class Server {
 			
 			while ((inputString = in.readLine()) != null) {
 				System.out.println(" Sent from the client: "+ inputString);
-				out.write("Server Ack " + inputString + "\n");
+				out.write(inputString + "\n");
 				out.flush();
 				System.out.println("Response sent");
-				
-//				
-//				System.out.println("Message from client " + inputString);
-//				out.write("Server Ack " + inputString + "\n");
-//				out.flush();
-//				System.out.println("Response sent");
+
 			
 			}
 			

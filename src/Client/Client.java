@@ -4,7 +4,6 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.Scanner;
 
@@ -18,8 +17,7 @@ public class Client {
 			System.out.println("Connection established");
 			BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream(), "UTF-8"));
 			BufferedWriter out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(), "UTF-8"));
-			// PrintWriter out = new PrintWriter(
-	        //        socket.getOutputStream(), true);
+
 			Scanner scanner = new Scanner(System.in);
 			String line = null;
 			//While the user input differs from "exit"

@@ -5,6 +5,7 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 
@@ -24,8 +25,11 @@ public class Server {
 		}
 		try {
 			ServerSocket serveSocket = new ServerSocket(port);
+			System.out.println("Server started on port" + port);
+			
 			while(true) {
 				Socket s = serveSocket.accept();
+				System.out.println("New client");
 				Thread thread = new Thread(() -> {startClient(s, path);});
 				System.out.println("thread created");
 				thread.start();
@@ -41,21 +45,34 @@ public class Server {
 	
 	public static void startClient(Socket cSocket,String path) {
 		try {
-			BufferedReader reader = new BufferedReader(new InputStreamReader(cSocket.getInputStream(), "UTF-8"));
-			BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(cSocket.getOutputStream(), "UTF-8"));
+			BufferedReader in = new BufferedReader(new InputStreamReader(cSocket.getInputStream()));
+			BufferedWriter out = new BufferedWriter(new OutputStreamWriter(cSocket.getOutputStream()));
+			// PrintWriter out = new PrintWriter(cSocket.getOutputStream(), true);
 			
 			String inputString = null;
 			
-			while ((inputString = reader.readLine()) != null) {
-				System.out.printf(
-                        " Sent from the client: %s\n",
-                        inputString);
-                    
-                    System.out.println("ack sent back");
+			while ((inputString = in.readLine()) != null) {
+				System.out.println(" Sent from the client: "+ inputString);
+				out.write("Server Ack " + inputString + "\n");
+				out.flush();
+				System.out.println("Response sent");
+				
+//				
+//				System.out.println("Message from client " + inputString);
+//				out.write("Server Ack " + inputString + "\n");
+//				out.flush();
+//				System.out.println("Response sent");
+			
 			}
 			
 		}catch (Exception e) {
 			
+		}
+		try {
+			cSocket.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 	}
 }

@@ -5,6 +5,8 @@ import java.io.BufferedWriter;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Scanner;
 
 public class Client {
@@ -20,14 +22,19 @@ public class Client {
 
 			Scanner scanner = new Scanner(System.in);
 			String line = null;
-			//While the user input differs from "exit"
+			
 			while (!(line = scanner.nextLine()).equalsIgnoreCase("exit"))
 			{
+				Map<String, String> data = new HashMap<>();
+				data.put("type", "this is the type");
+				data.put("word", "this is the word");
+				data.put("meaning", "this is a definition!");
 				
-				out.write(line + "\n");
+				
+				String map = data.toString();
+				out.write(map + "\n");
 				out.flush();
 				System.out.println("Message sent");
-				
 				
 				System.out.println("Message received: " + in.readLine());
 				
@@ -39,4 +46,7 @@ public class Client {
 		}
 	
 	}
+	
 }
+
+

@@ -1,0 +1,3 @@
+carrot = a green vegetable
+pear = an orange vegetable
+apple = a red vegetable

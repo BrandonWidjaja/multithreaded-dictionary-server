@@ -1,5 +1,3 @@
-package Server;
-
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -61,12 +59,13 @@ public class Server {
 		try {
 			BufferedReader in = new BufferedReader(new InputStreamReader(cSocket.getInputStream()));
 			BufferedWriter out = new BufferedWriter(new OutputStreamWriter(cSocket.getOutputStream()));
-		
+			
 			
 			String inputString = null;
 			
 			while ((inputString = in.readLine()) != null) {
 				String inputVal = inputString;
+				
 				// convert string into a map
 				inputVal = inputVal.substring(1, inputVal.length()-1);   
 				String[] keyValuePairs = inputVal.split(",");             
@@ -85,8 +84,6 @@ public class Server {
 				word = map.get("word");
 				definition = map.get("definition");
 				
-				
-				
 				if(option.equals("add")) {
 					
 					PrintWriter fileWrite = new PrintWriter(new BufferedWriter(new FileWriter(path, true)));
@@ -101,16 +98,23 @@ public class Server {
 					
 				}
 				if(option.equals("query")) {
-					if(findWord(word, path, option).equals("found")){
-						out.write("word found!" + "\n");
+					System.out.println("before");
+					String output = findWord(word, path, option);
+					System.out.println(output);
+					out.write("is this every time?");
+					if(!output.equals("not found")){
+						out.write("definition: " + output + "\n");
+						out.newLine();
 						out.flush();
 						System.out.println("Response sent");
-					} else if(findWord(word, path, option).equals("not found")) {
+					} else if(output.equals("not found")) {
 						out.write("word does not exist" + "\n");
+						out.newLine();
 						out.flush();
 						System.out.println("Response sent");
 					} else {
 						out.write("something went wrong" + "\n");
+						out.newLine();
 						out.flush();
 						System.out.println("Response sent");
 					}
@@ -123,40 +127,41 @@ public class Server {
 					PrintWriter removeWriter = new PrintWriter(new FileWriter(temporaryFile));
 					
 					String curr = null;
-					
+					Boolean removed = false;
 					while((curr = removeReader.readLine()) != null) {
-						
-						if (!curr.trim().equals(findWord(word, path, option))) {
-
+						String findWordResult =  findWord(word, path, option);
+						if (!curr.substring(0, findWordResult.length()).equalsIgnoreCase(findWordResult)) {
 					          removeWriter.println(curr);
 					          
+					    } else {
+					    	removed = true;
 					    }
-						
-						
-						
 					}
-					
 					
 					removeWriter.close();
 					removeReader.close();
 					try {
 						inputFile.delete();
-					} catch (SecurityException e){
+					} catch (Exception e){
 						System.out.println(e);
 					}				
-					
+
 					temporaryFile.renameTo(inputFile);
-					
-					
-					out.write("word removed successfully!" + "\n");
+					if (removed) {
+						out.write("word removed successfully!" + "\n");
+					} else {
+						out.write("word doesnt exist!" + "\n");
+					}
+					out.write("is this every time?");
+					out.newLine();
 					out.flush();
-					//System.out.println("Response sent (success)");
 					
 				}
 				
 			
 			}
-			
+			out.close();
+			in.close();
 		}catch (Exception e) {
 			
 		}
@@ -169,29 +174,43 @@ public class Server {
 	}
 	
 	public static String findWord(String word, String path, String option) {
+		String sendBack = "not found";
 		try {
 			scanner = new Scanner(new File(path));
+			scanner.useDelimiter("[=\n]");
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		
 		if (option.equals("query")) {
-			while(scanner.hasNextLine()){
-			    String str = scanner.nextLine();
-			    if(str.indexOf(word) != -1){
-			        return "found";
+
+			while(scanner.hasNext()){
+			    String nextWord = scanner.next();
+			    nextWord = nextWord.substring(0, nextWord.length() - 1);
+			    String skipDef = scanner.next();
+			    if(nextWord.equalsIgnoreCase(word)){
+			    	
+			    	
+			        sendBack = skipDef;
 			    }
 			}
-		} else if(option.equals("remove")) {
-			while(scanner.hasNextLine()){
-			    String str = scanner.nextLine();
-			    if(str.indexOf(word) != -1){
-			        return word + " = " + definition;
+			
+		} 
+		
+		if(option.equals("remove")) {
+			while(scanner.hasNext()){
+			    String nextWord = scanner.next();
+			    nextWord = nextWord.substring(0, nextWord.length() - 1);
+			    String skipDef = scanner.next();
+			    if(nextWord.equalsIgnoreCase(word)){
+			       sendBack = word + " = ";
 			    }
 			}
 		}
 		
-		return "not found";
+		scanner.close();
+		return sendBack;
 		
 	}
 }

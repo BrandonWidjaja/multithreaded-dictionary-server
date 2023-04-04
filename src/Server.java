@@ -14,6 +14,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
 
+import javax.swing.JOptionPane;
+
 public class Server {
 	
 	static int port;
@@ -29,26 +31,34 @@ public class Server {
 		try {
 			port = Integer.parseInt(args[0]);
 			path = args[1];
-			
+			File f = new File(path);
+			if(!f.exists() || f.isDirectory()) { 
+				JOptionPane.showMessageDialog(null, "File was not found at the given path, please make sure the path is correct and that the file exists.", "Server", JOptionPane.ERROR_MESSAGE);
+				System.exit(0);
+			}
 		}
 		catch (Exception e) {
 			
+		 	JOptionPane.showMessageDialog(null, "Please enter the port number followed by the 'File path'.", "Server", JOptionPane.ERROR_MESSAGE);
+	 		System.exit(0);
+		 	
 		}
 		try {
 			ServerSocket serveSocket = new ServerSocket(port);
-			System.out.println("Server started on port" + port);
+			System.out.println("Server started on port " + port);
 			
 			while(true) {
 				Socket s = serveSocket.accept();
-				System.out.println("New client");
 				Thread thread = new Thread(() -> {clientProcess(s, path);});
-				System.out.println("thread created");
+				System.out.println("New thread created");
 				thread.start();
 			}
 		}
 		catch (IOException e) 
 		{
 			
+			JOptionPane.showMessageDialog(null, "The port is either invalid, or may be in use by another program, please try another port.", "Server", JOptionPane.ERROR_MESSAGE);
+			System.exit(0);
 		}
 		
 		
@@ -57,9 +67,18 @@ public class Server {
 	
 	public static void clientProcess(Socket cSocket,String path) {
 		try {
+			
+			
 			BufferedReader in = new BufferedReader(new InputStreamReader(cSocket.getInputStream()));
 			BufferedWriter out = new BufferedWriter(new OutputStreamWriter(cSocket.getOutputStream()));
 			
+			File checkExist = new File(path);
+			if (!checkExist.exists()) {
+				out.write("There was an error trying to access the dictionary file" + "\n");
+				out.newLine();
+				out.flush();
+				return;
+			}
 			
 			String inputString = null;
 			
@@ -67,110 +86,222 @@ public class Server {
 				String inputVal = inputString;
 				
 				// convert string into a map
-				inputVal = inputVal.substring(1, inputVal.length()-1);   
-				String[] keyValuePairs = inputVal.split(",");             
+				inputVal = inputVal.substring(1, inputVal.length()-1); 
+				// ignore delimiters
+				String[] keyValuePairs = inputVal.split("(?<!\\\\)[:,|&]");  
+				
 				Map<String,String> map = new HashMap<>();               
-
+				
 				for(String pair : keyValuePairs)                       
 				{
 				    String[] entry = pair.split("=");                   
-				    map.put(entry[0].trim(), entry[1].trim());          
+				    map.put(entry[0].trim(), entry[1].trim());  
+				    
 				}
 				
-				System.out.println(" Option: "+ map.get("option") + "\n Word: " + map.get("word") + "\n Def: " + map.get("definition"));
 				
 				// extract data from map
-				option = map.get("option");
-				word = map.get("word");
-				definition = map.get("definition");
+				try {
+					option = map.get("option");
+					word = map.get("word");
+					definition = map.get("definition");
+				} catch (Exception e) {
+					JOptionPane.showMessageDialog(null, "The server recieved an incompatible request.", "Server", JOptionPane.ERROR_MESSAGE);
+					System.exit(0);
+				}
 				
-				if(option.equals("add")) {
-					
-					PrintWriter fileWrite = new PrintWriter(new BufferedWriter(new FileWriter(path, true)));
-					
-					fileWrite.println(word + " = " + definition);
-					fileWrite.flush();
-					fileWrite.close();
-					
-					out.write("word added successfully!" + "\n");
-					out.flush();
-					System.out.println("Response sent");
-					
-				}
-				if(option.equals("query")) {
-					System.out.println("before");
-					String output = findWord(word, path, option);
-					System.out.println(output);
-					out.write("is this every time?");
-					if(!output.equals("not found")){
-						out.write("definition: " + output + "\n");
-						out.newLine();
-						out.flush();
-						System.out.println("Response sent");
-					} else if(output.equals("not found")) {
-						out.write("word does not exist" + "\n");
-						out.newLine();
-						out.flush();
-						System.out.println("Response sent");
-					} else {
-						out.write("something went wrong" + "\n");
-						out.newLine();
-						out.flush();
-						System.out.println("Response sent");
+				// System.out.println(" Option: "+ map.get("option") + "\n Word: " + map.get("word") + "\n Definition: " + map.get("definition"));
+				try {
+				
+					if(option.equals("add")) {
+						String output = findWord(word, path, option);
+						System.out.println(output);
+						if (output.equals("not found")) {
+							try {
+								PrintWriter fileWrite = new PrintWriter(new BufferedWriter(new FileWriter(path, true)));
+								
+								fileWrite.println(word + " = " + definition);
+								fileWrite.flush();
+								fileWrite.close();
+								
+								out.write("Word added successfully!" + "\n");
+								out.flush();
+								System.out.println("Response sent");
+							}catch (Exception e) {
+								out.write("There was an error trying to write the word to the file" + "\n");
+								out.newLine();
+								out.flush();
+								JOptionPane.showMessageDialog(null, "Something went wrong writing a word to the dictionary", "Server", JOptionPane.ERROR_MESSAGE);
+							}
+						} else if (output.equals("exists")) {
+							out.write("Word is already in the dictionary!" + "\n");
+							out.flush();
+							System.out.println("Response sent");
+						}
+						
+						
 					}
-				}
-				if(option.equals("remove")) {
-					File inputFile = new File(path);
-					File temporaryFile = new File("myTempFile.txt");
-					
-					BufferedReader removeReader = new BufferedReader(new FileReader(inputFile));
-					PrintWriter removeWriter = new PrintWriter(new FileWriter(temporaryFile));
-					
-					String curr = null;
-					Boolean removed = false;
-					while((curr = removeReader.readLine()) != null) {
-						String findWordResult =  findWord(word, path, option);
-						if (!curr.substring(0, findWordResult.length()).equalsIgnoreCase(findWordResult)) {
-					          removeWriter.println(curr);
-					          
-					    } else {
-					    	removed = true;
-					    }
-					}
-					
-					removeWriter.close();
-					removeReader.close();
-					try {
-						inputFile.delete();
-					} catch (Exception e){
-						System.out.println(e);
-					}				
-
-					temporaryFile.renameTo(inputFile);
-					if (removed) {
-						out.write("word removed successfully!" + "\n");
-					} else {
-						out.write("word doesnt exist!" + "\n");
-					}
-					out.write("is this every time?");
+				}catch (NullPointerException e) {
+					out.write("Data sent to server is missing or altered" + "\n");
 					out.newLine();
 					out.flush();
+				}
+				
+				try {
+					if(option.equals("query")) {
+						
+						String output = findWord(word, path, option);
+						
+						if(!output.equals("not found")){
+							output = output.replace("\\,", ",");
+							
+							out.write(output + "\n");
+							out.newLine();
+							out.flush();
+							System.out.println("Response sent");
+						} else if(output.equals("not found")) {
+							out.write("That word does not exist" + "\n");
+							out.newLine();
+							out.flush();
+							System.out.println("Response sent");
+						} else {
+							out.write("something went wrong" + "\n");
+							out.newLine();
+							out.flush();
+							System.out.println("Response sent");
+						}
+					}
+				}catch (NullPointerException e) {
+					out.write("Data sent to server is missing or altered" + "\n");
+					out.newLine();
+					out.flush();
+				} catch (Exception e) {
+					out.write("Something went wrong during query" + "\n");
+					out.newLine();
+					out.flush();
+				}
+				
+				try {
+					if(option.equals("remove")) {
+						try {
+							File inputFile = new File(path);
+							File temporaryFile = new File("myTempFile.txt");
+							
+							BufferedReader removeReader = new BufferedReader(new FileReader(inputFile));
+							PrintWriter removeWriter = new PrintWriter(new FileWriter(temporaryFile));
+							
+							String curr = null;
+							Boolean removed = false;
+							while((curr = removeReader.readLine()) != null) {
+								String findWordResult =  findWord(word, path, option);
+								if (!curr.substring(0, findWordResult.length()).equalsIgnoreCase(findWordResult)) {
+							          removeWriter.println(curr);
+							          
+							    } else {
+							    	removed = true;
+							    }
+							}
+							
+							removeWriter.close();
+							removeReader.close();
+							try {
+								inputFile.delete();
+							} catch (Exception e){
+								System.out.println(e);
+								out.write("Something went wrong trying to delete the dictionary" + "\n");
+								out.newLine();
+								out.flush();
+							}
+							try {
+								temporaryFile.renameTo(inputFile);
+							} catch (Exception e) {
+								System.out.println(e);
+								out.write("Something went wrong trying to add the temp file as the dictionary" + "\n");
+								out.newLine();
+								out.flush();
+							}
+							
+							if (removed) {
+								out.write("Word removed successfully!" + "\n");
+							} else {
+								out.write("Word doesnt exist!" + "\n");
+							}
+							
+						} catch (Exception e){
+							out.write("Something went wrong trying to write definitions to a temporary file" + "\n");
+							out.newLine();
+							out.flush();
+						}
+						
+						out.newLine();
+						out.flush();
+						
+					}
+				}catch (NullPointerException e) {
+					out.write("Data sent to server is missing or altered" + "\n");
+					out.newLine();
+					out.flush();
+				}
+				
+				try {
 					
+					if (option.equals("update")) {
+						try {
+							File inputFile = new File(path);
+							File temporaryFile = new File("myTempFile.txt");
+							
+							BufferedReader removeReader = new BufferedReader(new FileReader(inputFile));
+							PrintWriter removeWriter = new PrintWriter(new FileWriter(temporaryFile));
+							
+							String curr = null;
+							Boolean updated = false;
+							while((curr = removeReader.readLine()) != null) {
+								String findWordResult =  findWord(word, path, option);
+								if (!curr.substring(0, findWordResult.length()).equalsIgnoreCase(findWordResult)) {
+							          removeWriter.println(curr);
+							          
+							    } else {
+							    	removeWriter.println(findWordResult + definition);
+							    	updated = true;
+							    }
+							}
+							
+							removeWriter.close();
+							removeReader.close();
+							try {
+								inputFile.delete();
+							} catch (Exception e){
+								System.out.println(e);
+							}				
+		
+							temporaryFile.renameTo(inputFile);
+							if (updated) {
+								out.write("Word updated successfully!" + "\n");
+							} else {
+								out.write("Word doesnt exist!" + "\n");
+							}
+							
+							out.newLine();
+							out.flush();
+						} catch (Exception e) {
+							out.write("Something went wrong trying to write definitions to a temporary file" + "\n");
+							out.newLine();
+							out.flush();
+						}
+					}
+				}catch (NullPointerException e) {
+					out.write("Data sent to server is missing or altered" + "\n");
+					out.newLine();
+					out.flush();
 				}
 				
 			
 			}
 			out.close();
 			in.close();
-		}catch (Exception e) {
-			
-		}
-		try {
-			cSocket.close();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		}catch (IOException e) {	
+			JOptionPane.showMessageDialog(null, "The server was unable to connect to the client", "Server", JOptionPane.ERROR_MESSAGE);
+		} 
 	}
 	
 	public static String findWord(String word, String path, String option) {
@@ -178,36 +309,36 @@ public class Server {
 		try {
 			scanner = new Scanner(new File(path));
 			scanner.useDelimiter("[=\n]");
+			while(scanner.hasNext()){
+				String nextWord = scanner.next();
+				nextWord = nextWord.substring(0, nextWord.length() - 1);
+				String skipDef = scanner.next();
+				   
+				if(nextWord.equalsIgnoreCase(word)){
+					if (option.equals("remove")) {
+				    	sendBack = word + " = ";
+				    }
+				    if (option.equals("query")) {
+				    	sendBack = skipDef;
+				   	}
+					if (option.equals("add")){
+						sendBack = "exists";
+					}
+					if (option.equals("update")){
+						sendBack = word + " = ";
+					}
+				}
+			}	
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			JOptionPane.showMessageDialog(null, "File was not found at the given path, please make sure the path is correct and that the file exists.", "Server", JOptionPane.ERROR_MESSAGE);
+			System.exit(0);
+		} catch (Exception e) {
+			JOptionPane.showMessageDialog(null, "Error searching for matches in dictionary file.", "Server", JOptionPane.ERROR_MESSAGE);
+			System.exit(0);
 		}
-		
-		if (option.equals("query")) {
 
-			while(scanner.hasNext()){
-			    String nextWord = scanner.next();
-			    nextWord = nextWord.substring(0, nextWord.length() - 1);
-			    String skipDef = scanner.next();
-			    if(nextWord.equalsIgnoreCase(word)){
-			    	
-			    	
-			        sendBack = skipDef;
-			    }
-			}
 			
-		} 
-		
-		if(option.equals("remove")) {
-			while(scanner.hasNext()){
-			    String nextWord = scanner.next();
-			    nextWord = nextWord.substring(0, nextWord.length() - 1);
-			    String skipDef = scanner.next();
-			    if(nextWord.equalsIgnoreCase(word)){
-			       sendBack = word + " = ";
-			    }
-			}
-		}
 		
 		scanner.close();
 		return sendBack;

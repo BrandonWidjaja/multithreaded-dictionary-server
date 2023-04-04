@@ -1,0 +1,3 @@
+hhhh = hey!
+hello = fdgdfgdfgfd
+hi = i

@@ -1,3 +1,4 @@
+import java.awt.Color;
 import java.awt.EventQueue;
 import javax.swing.JFrame;
 import javax.swing.JTextField;
@@ -12,8 +13,8 @@ import java.awt.event.ActionEvent;
 public class ClientGUI
 {
 	Client objClient = new Client();
-	JFrame clientInterface;
-	JTextField Word_textField;
+	JFrame interfaceWindow;
+	
 	static String ip;
 	static int port;
 	
@@ -25,194 +26,188 @@ public class ClientGUI
 	{
 		ClientGUI.port = port;	
 	}
+	
 	public static void ClientWindow(){
-		
-		ClientGUI window = new ClientGUI();
-		window.clientInterface.setVisible(true);
-				
+		EventQueue.invokeLater(new Runnable() {
+			public void run() {
+				try {
+					ClientGUI window = new ClientGUI();
+					window.interfaceWindow.setResizable(false);
+					window.interfaceWindow.setVisible(true);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		});
 	}
-	/**
-	 * Create the application.
-	 */
+	
 	public ClientGUI() 
 	{
-		initialize();
-	}
+		JTextField word_input;
+		interfaceWindow = new JFrame();
+		interfaceWindow.setTitle("My Dictionary");
+		interfaceWindow.setBounds(200, 200, 810, 530);
+		interfaceWindow.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		
+		JButton query_button = new JButton("Query");
+		query_button.setBounds(419, 50, 85, 43);
+		
+		JButton add_button = new JButton("Add");
+		add_button.setBounds(504, 50, 85, 43);
+		
+		JButton update_button = new JButton("Update");
+		update_button.setBounds(589, 93, 85, 43);
+		
+		JButton remove_button = new JButton("Remove");
+		remove_button.setBounds(589, 50, 85, 43);
+		
+		
+		
+		JLabel word_label = new JLabel("Word");
+		word_label.setBounds(110, 20, 100, 25);
+		interfaceWindow.getContentPane().add(word_label);
+		word_input = new JTextField();
+		word_input.setBounds(110, 50, 300, 45);
+		
+		
+		
+		JLabel definition_label = new JLabel("Definition");
+		definition_label.setBounds(110, 115, 100, 25);
+		JTextArea definition_input = new JTextArea();
+		definition_input.setBounds(110, 155, 205, 60);
+		JScrollPane definitionScroll = new JScrollPane(definition_input);
+		definitionScroll.setBounds(110, 155, 565, 60);
+		definitionScroll.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+		
+		
+		
+		JLabel result_label = new JLabel("Result");
+		result_label.setBounds(110, 225, 100, 25);
+		interfaceWindow.getContentPane().add(result_label);
+		final JTextArea result_output = new JTextArea();
+		result_output.setLineWrap(true);
+		result_output.setWrapStyleWord(true);
+		result_output.setBounds(110, 265, 565, 210);
+		result_output.setEditable(false);
+		result_output.setBackground(Color.WHITE);
+		
 
-	/**
-	 * Initialize the contents of the frame.
-	 */
-	private void initialize() {
-		clientInterface = new JFrame();
-		clientInterface.setTitle("Multi-threaded Dictionary Server");
-		clientInterface.setBounds(100, 100, 450, 400);
-		clientInterface.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		
-		Word_textField = new JTextField();
-		Word_textField.setBounds(80, 6, 205, 26);
-		Word_textField.setColumns(10);
-		
-		JLabel lblWord = new JLabel("Word");
-		lblWord.setBounds(15, 11, 32, 16);
-		
-		final JTextArea Meaning_textArea = new JTextArea();
-		JScrollPane sp = new JScrollPane(Meaning_textArea);
-		sp.setBounds(80,41,205,130);
-		sp.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
-		Meaning_textArea.setWrapStyleWord(true);
-		Meaning_textArea.setLineWrap(true);
-		Meaning_textArea.setBounds(80, 41, 205, 130);
-		clientInterface.getContentPane().add(sp);
-		
-		JLabel lblNewLabel = new JLabel("Meaning");
-		lblNewLabel.setBounds(15, 50, 53, 16);
-		
-		final JTextArea Result_textArea = new JTextArea();
-		Result_textArea.setLineWrap(true);
-		Result_textArea.setWrapStyleWord(true);
-		Result_textArea.setBounds(80, 189, 205, 149);
-		
-		//Three buttons: Query, Insert and Remove
-		JButton btnQuery = new JButton("Query");
-		btnQuery.setBounds(330, 6, 81, 29);
-		JButton btnAdd = new JButton("Add");
-		btnAdd.setBounds(331, 112, 80, 29);
-		JButton btnRemove = new JButton("Remove");
-		btnRemove.setBounds(330, 142, 93, 29);
-		
-		clientInterface.getContentPane().setLayout(null);
-		clientInterface.getContentPane().add(lblNewLabel);
-		clientInterface.getContentPane().add(lblWord);
-		clientInterface.getContentPane().add(Word_textField);
-		clientInterface.getContentPane().add(Result_textArea);
 
-		clientInterface.getContentPane().add(btnQuery);
-		clientInterface.getContentPane().add(btnAdd);
-		clientInterface.getContentPane().add(btnRemove);
-		
-		JLabel lblNewLabel_1 = new JLabel("Result");
-		lblNewLabel_1.setBounds(15, 200, 39, 16);
-		clientInterface.getContentPane().add(lblNewLabel_1);
+		interfaceWindow.getContentPane().setLayout(null);
+		interfaceWindow.getContentPane().add(definition_label);
+		interfaceWindow.getContentPane().add(word_input);
+		interfaceWindow.getContentPane().add(result_output);
+		interfaceWindow.getContentPane().add(query_button);
+		interfaceWindow.getContentPane().add(add_button);
+		interfaceWindow.getContentPane().add(update_button);
+		interfaceWindow.getContentPane().add(remove_button);
+		interfaceWindow.getContentPane().add(definitionScroll);
 		
 		//Query button listener
-		btnAdd.addActionListener(new ActionListener() {
+		add_button.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) 
 			{
 				
 				//add event for Query button
-				String word = Word_textField.getText();
+				String word = word_input.getText();
+				String meaning = definition_input.getText();
+				String newlineCheck = meaning.replace("\n", "");
 				if(word.isEmpty())
 				{
-					Result_textArea.setText("Please type a word.");
+					result_output.setText("The \"word\" field cannot be empty!");
+					return;
+				} else if (meaning.isEmpty()) {
+					result_output.setText("Please enter a definition!");
+					return;
+				} else if (newlineCheck.isEmpty()) {
+					result_output.setText("Please enter a definition!");
 					return;
 				}
-				String meaning = Meaning_textArea.getText();
 				
-				String displayText = Client.sendReq(ip,port,word,meaning, "add");
-				Word_textField.setText("");
-				Result_textArea.setText(displayText);
-//				if(displayText.equals("Word does not exist in the dictionary")) 
-//				{
-//					Meaning_textArea.setText("");
-//					Word_textField.setText("");
-//					Result_textArea.setText(displayText);
-//				}
-//				else if(displayText.equals("Server Error: Word could not be searched for 'Query' operation."))
-//				{
-//					Result_textArea.setText(displayText);
-//					Meaning_textArea.setText("");
-//					Word_textField.setText("");
-//				}
-//				else
-//				{
-//					Result_textArea.setText("");
-//					Meaning_textArea.setText(displayText);
-//				}
+				String displayText = Client.sendReq(ip, port, word, meaning, "add");
+				
+				
+				
+				word_input.setText("");
+				result_output.setText(displayText);
+				if (displayText.substring(0, "Word added successfully!".length()).equals("Word added successfully!")) {
+					definition_input.setText("");
+				}
 			}
 			
 		});
 		
 		
-		btnQuery.addActionListener(new ActionListener() {
+		query_button.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) 
 			{
-				
+				System.out.println("empty");
 				//add event for Query button
-				String word = Word_textField.getText();
+				String word = word_input.getText();
 				if(word.isEmpty())
 				{
-					Result_textArea.setText("Please type a word.");
+					
+					result_output.setText("The \"word\" field cannot be empty!");
 					return;
 				}
-				String meaning = Meaning_textArea.getText();
+				String meaning = definition_input.getText();
 				
 				String displayText = Client.sendReq(ip,port,word,meaning, "query");
-				Word_textField.setText("");
-				Result_textArea.setText(displayText);
-//				if(displayText.equals("Word does not exist in the dictionary")) 
-//				{
-//					Meaning_textArea.setText("");
-//					Word_textField.setText("");
-//					Result_textArea.setText(displayText);
-//				}
-//				else if(displayText.equals("Server Error: Word could not be searched for 'Query' operation."))
-//				{
-//					Result_textArea.setText(displayText);
-//					Meaning_textArea.setText("");
-//					Word_textField.setText("");
-//				}
-//				else
-//				{
-//					Result_textArea.setText("");
-//					Meaning_textArea.setText(displayText);
-//				}
+				word_input.setText("");
+				result_output.setText(displayText);
 			}
 			
 		});
 		
-		btnRemove.addActionListener(new ActionListener() {
+		remove_button.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) 
 			{
 				
 				//add event for Query button
-				String word = Word_textField.getText();
+				String word = word_input.getText();
 				if(word.isEmpty())
 				{
-					Result_textArea.setText("Please type a word.");
+					result_output.setText("The \"word\" field cannot be empty!");
 					return;
 				}
-				String meaning = Meaning_textArea.getText();
+				String meaning = definition_input.getText();
 				
 				String displayText = Client.sendReq(ip,port,word,meaning, "remove");
-				Word_textField.setText("");
-				Result_textArea.setText(displayText);
-//				if(displayText.equals("Word does not exist in the dictionary")) 
-//				{
-//					Meaning_textArea.setText("");
-//					Word_textField.setText("");
-//					Result_textArea.setText(displayText);
-//				}
-//				else if(displayText.equals("Server Error: Word could not be searched for 'Query' operation."))
-//				{
-//					Result_textArea.setText(displayText);
-//					Meaning_textArea.setText("");
-//					Word_textField.setText("");
-//				}
-//				else
-//				{
-//					Result_textArea.setText("");
-//					Meaning_textArea.setText(displayText);
-//				}
+				word_input.setText("");
+				result_output.setText(displayText);
 			}
 			
 		});
 		
+		update_button.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) 
+			{
+				
+				//add event for Query button
+				String word = word_input.getText();
+				String meaning = definition_input.getText();
+				if(word.isEmpty())
+				{
+					result_output.setText("The \"word\" field cannot be empty!");
+					return;
+				} else if (meaning.isEmpty()) {
+					result_output.setText("Please enter a definition!");
+					return;
+				}
+				
+				String displayText = Client.sendReq(ip, port, word, meaning, "update");
+				word_input.setText("");
+				result_output.setText(displayText);
+				System.out.println(displayText);
+				if(displayText.substring(0, "Word updated successfully!".length()).equals("Word updated successfully!")) 
+				{
+					definition_input.setText("");
+					
+				}
+			}
+			
+		});
 		
-		
-	
-		
-		
-		
-	
 	}
+
 }

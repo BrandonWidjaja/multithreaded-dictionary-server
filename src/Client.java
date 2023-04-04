@@ -1,26 +1,40 @@
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.net.ConnectException;
 import java.net.Socket;
+import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Scanner;
+
+import javax.swing.JOptionPane;
+
+
 
 public class Client {
 	
 	public static void main(String[] args) {
-		// read stdIn
-		ClientGUI GUI = new ClientGUI();
-		String ip = args[0];
-		int port = Integer.parseInt(args[1]);
+		try {
+			ClientGUI GUI = new ClientGUI();
+			String ip = args[0];
+			int port = Integer.parseInt(args[1]);
+
+			ClientGUI.ClientWindow();
+
+			GUI.sendIP(ip);
+			GUI.sendPort(port);
+		} catch (ArrayIndexOutOfBoundsException e) {
+			JOptionPane.showMessageDialog(null, "Please enter a valid IP and port number. Format: java –jar DictionaryClient.jar <server-address> <server-port>", "Client", JOptionPane.ERROR_MESSAGE);
+			
+		}
+		catch (Exception e) {
+			
+			JOptionPane.showMessageDialog(null, "Something went wrong creating the client window", "Client", JOptionPane.ERROR_MESSAGE);
+			
+		}
 		
-		// start the client GUI
-		ClientGUI.ClientWindow();
-		
-		// tell the GUI what port and ip to call for senReq
-		GUI.sendIP(ip);
-		GUI.sendPort(port);
 	
 	}
 	
@@ -33,38 +47,55 @@ public class Client {
 			BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream(), "UTF-8"));
 			BufferedWriter out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(), "UTF-8"));
 
-			Scanner scanner = new Scanner(System.in);
-			String line = null;
-			
-			
 			Map<String, String> data = new HashMap<>();
+			definition = definition.replace(",", "\\,");
+			definition = definition.replace("\n", "@#!?");
+			System.out.println(definition);
 			data.put("option", queryType);
 			data.put("word", word);
+			if (definition.isEmpty()) {
+				definition = " ";
+			}
 			data.put("definition", definition);
-				
-				
+			System.out.println("Data is ready to send to server");
 			String map = data.toString();
-			System.out.println("about to send");
 			out.write(map + "\n");
 			out.flush();
 			System.out.println("Message sent");
 			output = in.readLine();
+			output = output.replace("@#!?", "\n ");
 			System.out.println("Message received: " + output);
 			in.close();
 			out.close();
 			socket.close();
-			System.out.println("all good!");
-			return output;
+			
+			
+		}catch (UnknownHostException e) {
+			e.printStackTrace();
+			output = "Unkown host exception. Please check the IP address";
+			JOptionPane.showMessageDialog(null, "Unkown host exception. Please check the IP address", "Client", JOptionPane.ERROR_MESSAGE);
+			
+		}catch (ConnectException e) {
+			e.printStackTrace();
+			output = "Connect exception. Please check the IP address";
+			JOptionPane.showMessageDialog(null, "Connect exception. Please check the IP address", "Client", JOptionPane.ERROR_MESSAGE);
 		}
-		catch (Exception e) 
+		catch (IOException e) 
 		{
-			System.out.println(e);
-		} 
+			e.printStackTrace();
+			output = "Something went wrong trying to send the query to the server";
+			JOptionPane.showMessageDialog(null, "Something went wrong trying to send the query to the server", "Client", JOptionPane.ERROR_MESSAGE);
+			
+		}catch (Exception e) {
+			e.printStackTrace();
+			output = "Something went wrong trying to send the query to the server";
+			JOptionPane.showMessageDialog(null, "Something went wrong trying to send the query to the server", "Client", JOptionPane.ERROR_MESSAGE);
+			
+		}
 		
-		return "nope";
+		return output;
 		
 	}
-	
 	
 }
 

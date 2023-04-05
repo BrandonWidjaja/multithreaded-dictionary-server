@@ -26,10 +26,10 @@ public class Client {
 
 			
 			
-				Socket socket = new Socket(ip, port);
-				System.out.println("Connection established");
+			Socket socket = new Socket(ip, port);
+			System.out.println("Connection established");
 				
-				GUI.sendSocket(socket);
+			GUI.sendSocket(socket);
 				//GUI.sendPort(out);
 				
 			
@@ -45,20 +45,17 @@ public class Client {
 			//output = "Connect exception. Please check the IP address";
 			JOptionPane.showMessageDialog(null, "Connect exception. Please check the IP and PORT number", "Client", JOptionPane.ERROR_MESSAGE);
 			System.exit(0);
-		}
-		catch (IOException e) 
+		}catch (IOException e) 
 		{
 			e.printStackTrace();
 			//output = "Something went wrong trying to send the query to the server";
 			JOptionPane.showMessageDialog(null, "Something went wrong trying to send the query to the server", "Client", JOptionPane.ERROR_MESSAGE);
 			System.exit(0);
 			
-		}
-			 catch (ArrayIndexOutOfBoundsException e) {
+		}catch (ArrayIndexOutOfBoundsException e) {
 			JOptionPane.showMessageDialog(null, "Please enter a valid IP and port number. Format: java –jar DictionaryClient.jar <server-address> <server-port>", "Client", JOptionPane.ERROR_MESSAGE);
 			System.exit(0);
-		}
-		catch (Exception e) {
+		}catch (Exception e) {
 			
 			JOptionPane.showMessageDialog(null, "Something went wrong creating the client window", "Client", JOptionPane.ERROR_MESSAGE);
 			System.exit(0);

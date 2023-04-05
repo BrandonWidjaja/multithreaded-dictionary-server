@@ -19,16 +19,15 @@ public class ClientGUI
 	JFrame interfaceWindow;
 	
 	static Socket socket;
-	static BufferedWriter out;
+	
 	
 	public void sendSocket(Socket socket)
 	{
 		ClientGUI.socket = socket;
 	}
-	public void sendPort(BufferedWriter out)
-	{
-		ClientGUI.out = out;	
-	}
+	
+	
+	
 	
 	public static void ClientWindow(){
 		EventQueue.invokeLater(new Runnable() {

@@ -13,6 +13,10 @@ import java.net.Socket;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import javax.swing.JOptionPane;
 
@@ -25,6 +29,7 @@ public class Server {
 	static String word;
 	static String definition;
 	
+	
 	static Scanner scanner;
 	static int counter = 0;
 	public static void main(String[] args) {
@@ -36,6 +41,11 @@ public class Server {
 				JOptionPane.showMessageDialog(null, "File was not found at the given path, please make sure the path is correct and that the file exists.", "Server", JOptionPane.ERROR_MESSAGE);
 				System.exit(0);
 			}
+			ServerGUI GUI = new ServerGUI();
+			GUI.sendPath(path);
+			
+
+			ServerGUI.ServerWindow();
 		}
 		catch (Exception e) {
 			
@@ -121,7 +131,9 @@ public class Server {
 			in.close();
 		}catch (IOException e) {	
 			JOptionPane.showMessageDialog(null, "A client was disconnected", "Server", JOptionPane.ERROR_MESSAGE);
-		} 
+		} catch (Exception e) {
+			JOptionPane.showMessageDialog(null, "Something happened while processing the input data", "Server", JOptionPane.ERROR_MESSAGE);
+		}
 	}
 	
 	public static synchronized void processReq(BufferedReader in, BufferedWriter out, String path, String option, String word, String definition) {
@@ -312,7 +324,17 @@ public class Server {
 			JOptionPane.showMessageDialog(null, "Server could not process a request", "Server", JOptionPane.ERROR_MESSAGE);
 		}
 	}
-	
+	public static String sendDict(String input) {
+		Path path = Paths.get(input);
+		try {
+			return Files.readString(path, StandardCharsets.UTF_8);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return "Error reading dictionary";
+		
+	}
 	public static String findWord(String word, String path, String option) {
 		String sendBack = "not found";
 		try {

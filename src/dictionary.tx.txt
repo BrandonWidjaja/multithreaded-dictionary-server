@@ -1,3 +1,0 @@
-q = fg
-fg = fff
-hi = gfgf

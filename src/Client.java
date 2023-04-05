@@ -36,7 +36,7 @@ public class Client {
 			
 		}catch (UnknownHostException e) {
 			e.printStackTrace();
-			//output = "Unkown host exception. Please check the IP address";
+			//output = "Unknown host exception. Please check the IP address";
 			JOptionPane.showMessageDialog(null, "Unkown host exception. Please check the IP address", "Client", JOptionPane.ERROR_MESSAGE);
 			System.exit(0);
 			

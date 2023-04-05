@@ -8,6 +8,9 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JButton;
 import java.awt.event.ActionListener;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.net.Socket;
 import java.awt.event.ActionEvent;
 
 public class ClientGUI
@@ -15,16 +18,16 @@ public class ClientGUI
 	Client objClient = new Client();
 	JFrame interfaceWindow;
 	
-	static String ip;
-	static int port;
+	static Socket socket;
+	static BufferedWriter out;
 	
-	public void sendIP(String ip)
+	public void sendSocket(Socket socket)
 	{
-		ClientGUI.ip = ip;
+		ClientGUI.socket = socket;
 	}
-	public void sendPort(int port)
+	public void sendPort(BufferedWriter out)
 	{
-		ClientGUI.port = port;	
+		ClientGUI.out = out;	
 	}
 	
 	public static void ClientWindow(){
@@ -124,7 +127,7 @@ public class ClientGUI
 					return;
 				}
 				
-				String displayText = Client.sendReq(ip, port, word, meaning, "add");
+				String displayText = Client.sendReq(socket, word, meaning, "add");
 				
 				
 				
@@ -152,7 +155,7 @@ public class ClientGUI
 				}
 				String meaning = definition_input.getText();
 				
-				String displayText = Client.sendReq(ip,port,word,meaning, "query");
+				String displayText = Client.sendReq(socket,word,meaning, "query");
 				word_input.setText("");
 				result_output.setText(displayText);
 			}
@@ -172,7 +175,7 @@ public class ClientGUI
 				}
 				String meaning = definition_input.getText();
 				
-				String displayText = Client.sendReq(ip,port,word,meaning, "remove");
+				String displayText = Client.sendReq(socket,word,meaning, "remove");
 				word_input.setText("");
 				result_output.setText(displayText);
 			}
@@ -195,7 +198,7 @@ public class ClientGUI
 					return;
 				}
 				
-				String displayText = Client.sendReq(ip, port, word, meaning, "update");
+				String displayText = Client.sendReq(socket, word, meaning, "update");
 				word_input.setText("");
 				result_output.setText(displayText);
 				System.out.println(displayText);

@@ -26,7 +26,7 @@ public class Server {
 	static String definition;
 	
 	static Scanner scanner;
-	
+	static int counter = 0;
 	public static void main(String[] args) {
 		try {
 			port = Integer.parseInt(args[0]);
@@ -50,7 +50,9 @@ public class Server {
 			while(true) {
 				Socket s = serveSocket.accept();
 				Thread thread = new Thread(() -> {clientProcess(s, path);});
-				System.out.println("New thread created");
+				counter++;
+				System.out.println("Client " + counter + " has been connected");
+				System.out.println("New client thread created");
 				thread.start();
 			}
 		}
@@ -115,7 +117,6 @@ public class Server {
 				
 					if(option.equals("add")) {
 						String output = findWord(word, path, option);
-						System.out.println(output);
 						if (output.equals("not found")) {
 							try {
 								PrintWriter fileWrite = new PrintWriter(new BufferedWriter(new FileWriter(path, true)));
@@ -300,7 +301,7 @@ public class Server {
 			out.close();
 			in.close();
 		}catch (IOException e) {	
-			JOptionPane.showMessageDialog(null, "The server was unable to connect to the client", "Server", JOptionPane.ERROR_MESSAGE);
+			JOptionPane.showMessageDialog(null, "A client was disconnected", "Server", JOptionPane.ERROR_MESSAGE);
 		} 
 	}
 	
